@@ -330,7 +330,7 @@ class _HabitsScreenContent extends StatelessWidget {
     bool isCompleted,
     HabitTrackingViewModel viewModel,
   ) {
-    // الحصول على اسم المنطقة من معرفها
+    // استخدام دالة getAreaName للحصول على اسم المنطقة من معرفها
     final areaName = viewModel.getAreaName(habit.area);
 
     return Padding(
@@ -357,7 +357,7 @@ class _HabitsScreenContent extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // عرض المنطقة المختارة
+                  // عرض اسم المنطقة المحصول عليه
                   _buildAreaTag(areaName),
                 ],
               ),

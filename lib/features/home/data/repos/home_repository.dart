@@ -3,6 +3,8 @@ import 'package:hive/hive.dart';
 import 'package:trakify/features/add_habit/data/models/habit_model.dart';
 import 'package:trakify/features/add_habit/data/repos/habit_repository.dart';
 
+import '../models/habit_completion_model.dart';
+
 class HabitTrackingRepository {
   final HabitRepository habitRepository;
 
@@ -27,23 +29,20 @@ class HabitTrackingRepository {
   // تبديل حالة إكمال العادة
   Future<void> toggleHabitCompletion(String habitId, String dateString) async {
     try {
-      final box = await Hive.openBox<Map>('habit_completion');
-      Map<dynamic, dynamic>? completionData = box.get(habitId);
+      // استخدام الصندوق المفتوح بالفعل
+      final box = Hive.box<HabitCompletionModel>('habit_completion');
 
-      if (completionData == null) {
-        completionData = {'dates': <String>[]};
+      // استخدام ? للإشارة إلى أن القيمة قد تكون null
+      HabitCompletionModel? completion = box.get(habitId);
+
+      // إذا كانت القيمة null، قم بإنشاء كائن جديد
+      if (completion == null) {
+        completion = HabitCompletionModel(habitId: habitId);
       }
 
-      final dates = List<String>.from(completionData['dates'] ?? []);
-
-      if (dates.contains(dateString)) {
-        dates.remove(dateString);
-      } else {
-        dates.add(dateString);
-      }
-
-      completionData['dates'] = dates;
-      await box.put(habitId, completionData);
+      // الآن يمكننا تنفيذ العمليات على completion لأننا تحققنا من أنه ليس null
+      completion.toggleCompletion(dateString);
+      await box.put(habitId, completion);
     } catch (e) {
       print('Error toggling habit completion: $e');
     }
@@ -52,15 +51,15 @@ class HabitTrackingRepository {
   // تحقق هل العادة مكتملة في تاريخ معين
   bool isHabitCompletedOnDate(String habitId, String dateString) {
     try {
-      final box = Hive.box<Map>('habit_completion');
-      final completionData = box.get(habitId);
+      // عدم محاولة فتح الصندوق مرة أخرى، بل استخدام الصندوق المفتوح بالفعل
+      final box = Hive.box<HabitCompletionModel>('habit_completion');
 
-      if (completionData == null) {
+      final completion = box.get(habitId);
+      if (completion == null) {
         return false;
       }
 
-      final dates = List<String>.from(completionData['dates'] ?? []);
-      return dates.contains(dateString);
+      return completion.isCompletedOnDate(dateString);
     } catch (e) {
       print('Error checking habit completion: $e');
       return false;
