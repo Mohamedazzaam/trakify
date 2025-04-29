@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:trakify/core/widgets/bg_shape_scaffold.dart';
 
+import '../../../core/theming/app_colors.dart';
 import '../../../core/widgets/area_habit_item.dart';
 import '../../../core/widgets/area_list_tile.dart';
 import '../../../features/add_habit/data/models/habit_model.dart';
+import '../../add_habit/ui/add_habit_screen.dart';
 import '../data/models/area_model.dart';
 
 class AreaScreen extends StatelessWidget {
@@ -73,11 +75,12 @@ class AreaScreen extends StatelessWidget {
             ),
 
             // عرض العادات المرتبطة بالمنطقة
+            // في الجزء الخاص بعرض العادات
             Expanded(
               child: ValueListenableBuilder<Box<Habit>>(
                 valueListenable: Hive.box<Habit>('habits').listenable(),
                 builder: (context, habitBox, child) {
-                  // فلترة العادات حسب المنطقة
+                  // فلترة العادات بناءً على معرّف المنطقة
                   final habits =
                       habitBox.values
                           .where((habit) => habit.area == areaId)
@@ -95,14 +98,17 @@ class AreaScreen extends StatelessWidget {
                           SizedBox(height: 20),
                           ElevatedButton.icon(
                             onPressed: () {
-                              // توجيه المستخدم إلى شاشة إضافة عادة
-                              // يمكنك تنفيذ هذا حسب منطق التطبيق الخاص بك
-                              Navigator.of(context).pushNamed('/add_habit');
+                              // التوجيه إلى شاشة إضافة عادة
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => AddHabitScreen(),
+                                ),
+                              );
                             },
                             icon: Icon(Icons.add),
                             label: Text('Add Habit'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xff1B8466),
+                              backgroundColor: AppColors.primary,
                               foregroundColor: Colors.white,
                             ),
                           ),
@@ -133,18 +139,6 @@ class AreaScreen extends StatelessWidget {
         ),
       ),
       // زر إضافة عادة جديدة
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Color(0xff1B8466),
-        child: Icon(Icons.add),
-        onPressed: () {
-          // يمكنك توجيه المستخدم إلى شاشة إضافة عادة مع تحديد المنطقة مسبقًا
-          // ستحتاج إلى تعديل هذا حسب منطق التطبيق الخاص بك
-          Navigator.of(context).pushNamed(
-            '/add_habit',
-            arguments: {'areaId': areaId, 'areaName': title},
-          );
-        },
-      ),
     );
   }
 

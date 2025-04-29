@@ -24,7 +24,7 @@ class AddHabitState extends Equatable {
     this.selectedNumber,
     this.dailyNotification = true,
     this.selectedTimes = const [],
-    this.selectedArea,
+    this.selectedArea = 'General', // تعيين قيمة افتراضية
     this.status = AddHabitStatus.initial,
     this.errorMessage,
   });
@@ -51,7 +51,23 @@ class AddHabitState extends Equatable {
       selectedTimes: selectedTimes ?? this.selectedTimes,
       selectedArea: selectedArea ?? this.selectedArea,
       status: status ?? this.status,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: errorMessage,
+    );
+  }
+
+  // طريقة لإنشاء حالة ابتدائية
+  factory AddHabitState.initial() {
+    return const AddHabitState(
+      habitName: '',
+      selectedIcon: Icons.emoji_emotions,
+      repeatType: 'Daily',
+      selectedDays: [],
+      selectedNumber: null,
+      dailyNotification: true,
+      selectedTimes: [],
+      selectedArea: 'General',
+      status: AddHabitStatus.initial,
+      errorMessage: null,
     );
   }
 

@@ -346,6 +346,7 @@ class _AddHabitForm extends StatelessWidget {
                 ], // هذا هو قوس الإغلاق للشرط - يجب أن يكون هنا
                 // قائمة منسدلة لاختيار المجال - خارج الشرط
                 // قائمة منسدلة لاختيار المجال
+                // في widget _AddHabitForm
                 DropdownButtonFormField<String>(
                   value: state.selectedArea,
                   decoration: InputDecoration(

@@ -1,8 +1,10 @@
+// lib/features/add_habit/data/models/habit_model.dart
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+
 part 'habit_model.g.dart';
 
-@HiveType(typeId: 0) // معرف فريد لنوع الكائن
+@HiveType(typeId: 0)
 class Habit extends HiveObject {
   @HiveField(0)
   late String id;
@@ -11,10 +13,10 @@ class Habit extends HiveObject {
   late String name;
 
   @HiveField(2)
-  late int iconCodePoint; // نخزن رقم الرمز بدلاً من IconData
+  late int iconCodePoint;
 
   @HiveField(3)
-  late String iconFontFamily; // نخزن اسم عائلة الخط
+  late String iconFontFamily;
 
   @HiveField(4)
   late String repeatType;
@@ -29,7 +31,7 @@ class Habit extends HiveObject {
   late bool dailyNotification;
 
   @HiveField(8)
-  late List<String> reminderTimes; // نخزن الأوقات كسلاسل نصية
+  late List<String> reminderTimes;
 
   @HiveField(9)
   late String area;
@@ -60,12 +62,4 @@ class Habit extends HiveObject {
     iconCodePoint,
     fontFamily: iconFontFamily.isEmpty ? null : iconFontFamily,
   );
-
-  // طريقة مساعدة لتحويل سلاسل الوقت إلى كائنات TimeOfDay
-  List<TimeOfDay> get timeOfDayReminderTimes {
-    return reminderTimes.map((timeString) {
-      final parts = timeString.split(':');
-      return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
-    }).toList();
-  }
 }

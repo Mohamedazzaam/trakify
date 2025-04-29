@@ -1,55 +1,99 @@
 // lib/features/add_habit/data/repos/habit_repository.dart
-import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:uuid/uuid.dart';
 import '../models/habit_model.dart';
 
 class HabitRepository {
-  final Box<Habit> _habitsBox = Hive.box<Habit>('habits');
+  // Getter to access the habits box
+  Box<Habit> get _habitBox => Hive.box<Habit>('habits');
 
-  // إنشاء عادة جديدة
-  Future<void> createHabit({
-    required String name,
-    required IconData icon,
-    required String repeatType,
-    required List<String> selectedDays,
-    int? repeatNumber,
-    required bool dailyNotification,
-    required List<TimeOfDay> reminderTimes,
-    required String area,
-  }) async {
-    final habit = Habit.create(
-      id: const Uuid().v4(),
-      name: name,
-      icon: icon,
-      repeatType: repeatType,
-      selectedDays: selectedDays,
-      repeatNumber: repeatNumber,
-      dailyNotification: dailyNotification,
-      reminderTimes: reminderTimes,
-      area: area,
-    );
-
-    await _habitsBox.put(habit.id, habit);
-  }
-
-  // الحصول على جميع العادات
+  // Get all habits
   List<Habit> getAllHabits() {
-    return _habitsBox.values.toList();
+    return _habitBox.values.toList();
   }
 
-  // الحصول على عادة بواسطة المعرف
+  // Add new habit
+  Future<void> addHabit(Habit habit) async {
+    await _habitBox.put(habit.id, habit);
+  }
+
+  // Get habit by ID
   Habit? getHabitById(String id) {
-    return _habitsBox.get(id);
+    return _habitBox.get(id);
   }
 
-  // تحديث عادة موجودة
+  // Update existing habit
   Future<void> updateHabit(Habit habit) async {
     await habit.save();
   }
 
-  // حذف عادة
+  // Delete habit
   Future<void> deleteHabit(String id) async {
-    await _habitsBox.delete(id);
+    await _habitBox.delete(id);
+  }
+
+  // Get habits by area ID
+  List<Habit> getHabitsByArea(String areaId) {
+    return _habitBox.values.where((habit) => habit.area == areaId).toList();
+  }
+  // lib/features/add_habit/data/repos/habit_repository.dart
+
+  // أضف هذه الطرق إلى فئة HabitRepository الموجودة:
+
+  // جلب العادات حسب الفئة
+  List<Habit> getHabitsByCategory(String category) {
+    if (category == 'All') {
+      return getAllHabits();
+    }
+
+    // في حالة الحاجة إلى فلترة حسب الفئة
+    return getAllHabits()
+        .where((habit) => _getHabitCategory(habit) == category)
+        .toList();
+  }
+
+  // تبديل حالة إكمال العادة
+  Future<void> toggleHabitCompletion(String habitId, String dateString) async {
+    final box = await Hive.openBox<Map>('habit_completion');
+    Map<dynamic, dynamic>? completionData = box.get(habitId);
+
+    if (completionData == null) {
+      completionData = {'dates': <String>[]};
+    }
+
+    final dates = List<String>.from(completionData['dates'] ?? []);
+
+    if (dates.contains(dateString)) {
+      dates.remove(dateString);
+    } else {
+      dates.add(dateString);
+    }
+
+    completionData['dates'] = dates;
+    await box.put(habitId, completionData);
+  }
+
+  // تحقق هل العادة مكتملة في تاريخ معين
+  bool isHabitCompletedOnDate(String habitId, String dateString) {
+    final box = Hive.box<Map>('habit_completion');
+    final completionData = box.get(habitId);
+
+    if (completionData == null) {
+      return false;
+    }
+
+    final dates = List<String>.from(completionData['dates'] ?? []);
+    return dates.contains(dateString);
+  }
+
+  // طريقة مساعدة لتحديد فئة العادة
+  String _getHabitCategory(Habit habit) {
+    // يمكنك تعديل هذا حسب كيفية تخزين الفئات في تطبيقك
+    if (habit.area.toLowerCase().contains('health')) return 'Health';
+    if (habit.area.toLowerCase().contains('well') ||
+        habit.area.toLowerCase().contains('wellbeing'))
+      return 'Well Being';
+    if (habit.area.toLowerCase().contains('test')) return 'Test';
+
+    return 'All';
   }
 }

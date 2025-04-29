@@ -8,6 +8,7 @@ import 'package:trakify/trakify_app.dart';
 
 import 'features/add_habit/data/models/habit_model.dart';
 import 'features/areas/data/models/area_model.dart';
+import 'features/home/data/models/habit_completion_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,10 +19,12 @@ void main() async {
   // تسجيل محول Habit
   Hive.registerAdapter(HabitAdapter());
   Hive.registerAdapter(AreaAdapter()); // أضف هذا السطر
+  Hive.registerAdapter(HabitCompletionModelAdapter());
 
   // فتح صندوق لتخزين العادات
   await Hive.openBox<Habit>('habits');
   await Hive.openBox<Area>('areas'); // أضف هذا السطر
+  await Hive.openBox<HabitCompletionModel>('habit_completion');
 
   await setupGetIt();
   String initialRoute = await InitialRouteManager.determineInitialRoute();
