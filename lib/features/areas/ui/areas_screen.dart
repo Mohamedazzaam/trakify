@@ -74,6 +74,7 @@ class AreaListView extends StatelessWidget {
                     ),
                   );
                 },
+                enable: true,
               ),
             );
           },

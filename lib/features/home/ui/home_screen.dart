@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trakify/core/theming/app_colors.dart';
+import 'package:trakify/core/widgets/bg_shape_scaffold.dart';
 import 'package:trakify/features/add_habit/data/models/habit_model.dart';
 import 'package:trakify/features/add_habit/data/repos/habit_repository.dart';
 import 'package:trakify/features/home/ui/view_model/habit_tracking_view_model.dart';
@@ -31,14 +32,11 @@ class _HabitsScreenContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<HabitTrackingViewModel>(
       builder: (context, viewModel, _) {
-        return Scaffold(
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            child:
-                viewModel.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _buildContent(context, viewModel),
-          ),
+        return BgShapeScaffold(
+          body:
+              viewModel.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _buildContent(context, viewModel),
         );
       },
     );
@@ -119,7 +117,7 @@ class _HabitsScreenContent extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.lightGreen.shade50,
+        color: AppColors.primaryLight,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
@@ -233,9 +231,9 @@ class _HabitsScreenContent extends StatelessWidget {
             height: 200,
             errorBuilder: (context, error, stackTrace) {
               return const Icon(
-                Icons.cloud_outlined,
+                Icons.wb_cloudy_outlined,
                 size: 100,
-                color: Colors.grey,
+                color: AppColors.primaryLight,
               );
             },
           ),
@@ -270,10 +268,9 @@ class _HabitsScreenContent extends StatelessWidget {
         decoration: BoxDecoration(
           color:
               isCompleted
-                  ? Colors
-                      .lightGreen
-                      .shade100 // Lighter green for completed habits
-                  : Colors.lightGreen.shade50, // Original color for in-progress
+                  ? AppColors
+                      .primaryLight // Lighter green for completed habits
+                  : AppColors.primaryLight, // Original color for in-progress
           borderRadius: BorderRadius.circular(10),
           // Add a subtle border for completed items
           border:

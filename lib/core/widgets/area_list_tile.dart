@@ -13,7 +13,8 @@ class AreaListTile extends StatelessWidget {
     required this.subTitleColor,
     required this.title,
     required this.subTitle,
-    this.onTap, // أضف هذه الخاصية
+    this.onTap,
+    required this.enable, // أضف هذه الخاصية
   });
 
   final String title;
@@ -25,28 +26,32 @@ class AreaListTile extends StatelessWidget {
   final Color cardColor;
   final Color titleColor;
   final Color subTitleColor;
+  final bool enable;
   final VoidCallback? onTap; // أضف هذه الخاصية
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap:
-          onTap ??
-          () {
-            // السلوك الافتراضي إذا لم يتم تمرير onTap
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) => AreaScreen(
-                      title: title,
-                      subTitle: subTitle,
-                      areaLeadingIcon: areaLeadingIcon,
-                    ),
-              ),
-            );
-          },
+          enable
+              ? (onTap ??
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => AreaScreen(
+                              title: title,
+                              subTitle: subTitle,
+                              areaLeadingIcon: areaLeadingIcon,
+                            ),
+                      ),
+                    );
+                  })
+              : null,
+
       child: Card(
+        elevation: 0,
         color: cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         child: ListTile(

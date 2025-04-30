@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:trakify/core/widgets/bg_shape_scaffold.dart';
-
 import '../../../core/theming/app_colors.dart';
 import '../../../core/widgets/area_habit_item.dart';
 import '../../../core/widgets/area_list_tile.dart';
 import '../../../features/add_habit/data/models/habit_model.dart';
 import '../../add_habit/ui/add_habit_screen.dart';
 import '../../edit_habit/ui/edit_habit_screen.dart';
-import '../../progress/ui/view_models/StatisticsViewModel.dart';
 import '../data/models/area_model.dart';
-import 'package:provider/provider.dart';
 
 class AreaScreen extends StatelessWidget {
   const AreaScreen({
@@ -37,7 +34,7 @@ class AreaScreen extends StatelessWidget {
 
     return BgShapeScaffold(
       appBar: AppBar(
-        backgroundColor: null,
+        backgroundColor: Colors.transparent,
         automaticallyImplyLeading: false,
         leading: InkWell(
           onTap: () {
@@ -74,6 +71,7 @@ class AreaScreen extends StatelessWidget {
                 cardColor: Color(0xff1B8466),
                 titleColor: Colors.white,
                 subTitleColor: Colors.white,
+                enable: false,
               ),
             ),
 

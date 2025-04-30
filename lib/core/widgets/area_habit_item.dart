@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trakify/core/theming/app_colors.dart';
 import '../../../features/add_habit/data/models/habit_model.dart';
 
 class AreaHabitItem extends StatelessWidget {
@@ -49,48 +50,53 @@ class AreaHabitItem extends StatelessWidget {
             SizedBox(height: 12),
             Align(
               alignment: Alignment.bottomLeft,
-              child: Container(
-                height: 32,
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(areaLeadingIcon, size: 16),
-                    SizedBox(width: 5),
-                    Text(title, style: TextStyle(fontSize: 14)),
-                  ],
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    height: 32,
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Color(0xffFFF4B5),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          areaLeadingIcon,
+                          size: 16,
+                          color: AppColors.primary,
+                        ),
+                        SizedBox(width: 5),
+                        Text(title, style: TextStyle(fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    height: 24,
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: Color(0xffFFF4B5),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.repeat, size: 14, color: AppColors.primary),
+                        SizedBox(width: 4),
+                        Text(
+                          _getRepeatText(habit),
+                          style: TextStyle(fontSize: 12, color: Colors.black),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
             // إضافة معلومات التكرار
-            SizedBox(height: 8),
-            Align(
-              alignment: Alignment.bottomLeft,
-              child: Container(
-                height: 24,
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: Color(0xFFEEEEEE),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.repeat, size: 14, color: Colors.grey[700]),
-                    SizedBox(width: 4),
-                    Text(
-                      _getRepeatText(habit),
-                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ],
         ),
       ),

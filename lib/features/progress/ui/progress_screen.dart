@@ -83,7 +83,7 @@ class _StatisticsContent extends StatelessWidget {
           _buildStatCard(
             context,
             icon: Icons.calendar_today,
-            title: 'Average per Daily',
+            title: 'Average Daily',
             value: viewModel.averagePerDay.toString(),
             color: AppColors.primary,
           ),
@@ -139,7 +139,7 @@ class _StatisticsContent extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                     fontSize: 14,
                   ),
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -187,8 +187,9 @@ class _StatisticsContent extends StatelessWidget {
     final statistics = viewModel.getHabitStatistics(habit.id);
 
     return Card(
+      color: AppColors.primaryLight,
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
+      elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -205,6 +206,7 @@ class _StatisticsContent extends StatelessWidget {
                 // Layout that properly handles overflow
                 Expanded(
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // Flexible name that can shrink
                       Flexible(
@@ -229,13 +231,13 @@ class _StatisticsContent extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.grey[200],
+                          color: Color(0xffFFF4B5),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           _getScheduleText(habit),
                           style: TextStyle(
-                            color: Colors.grey[700],
+                            color: Colors.black,
                             fontSize: 11, // Smaller text
                             fontWeight: FontWeight.w500,
                           ),
