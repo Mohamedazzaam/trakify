@@ -6,13 +6,14 @@ import 'package:trakify/features/add_habit/data/repos/habit_repository.dart';
 import 'package:trakify/features/home/ui/view_model/habit_tracking_view_model.dart';
 
 import '../data/repos/home_repository.dart';
+import 'CalendarWidget.dart';
 
 class HabitsScreen extends StatelessWidget {
   const HabitsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // توفير ViewModel مباشرة في الشاشة
+    // Provide ViewModel directly in the screen
     return ChangeNotifierProvider(
       create:
           (context) => HabitTrackingViewModel(
@@ -50,15 +51,15 @@ class _HabitsScreenContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 10),
-          // عنوان بسيط
+          // Simple title
           const SizedBox(height: 20),
-          // شريط الفئات
+          // Category tabs
           _buildCategoryTabs(context, viewModel),
           const SizedBox(height: 10),
-          // محدد التاريخ
+          // Date selector with calendar
           _buildDateSelector(context, viewModel),
           const SizedBox(height: 20),
-          // قائمة العادات
+          // Habits list
           Expanded(
             child:
                 viewModel.hasHabits
@@ -141,6 +142,11 @@ class _HabitsScreenContent extends StatelessWidget {
               ],
             ),
           ),
+          // Add a calendar icon button to open the calendar dialog
+          IconButton(
+            icon: const Icon(Icons.calendar_month, color: AppColors.primary),
+            onPressed: () => _showCalendarDialog(context, viewModel),
+          ),
           IconButton(
             icon: const Icon(
               Icons.arrow_back_ios,
@@ -174,7 +180,7 @@ class _HabitsScreenContent extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(bottom: 10),
               child: Text(
-                'in progress',
+                'In Progress',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
@@ -207,7 +213,7 @@ class _HabitsScreenContent extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(
-            'assets/images/empty_habits.png', // استبدلها بمسار الصورة الفعلي
+            'assets/images/empty_habits.png', // Replace with your actual image path
             width: 200,
             height: 200,
             errorBuilder: (context, error, stackTrace) {
@@ -225,7 +231,7 @@ class _HabitsScreenContent extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'time to start building one! 🚀',
+            'Time to start building one! 🚀',
             style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
         ],
@@ -239,7 +245,7 @@ class _HabitsScreenContent extends StatelessWidget {
     bool isCompleted,
     HabitTrackingViewModel viewModel,
   ) {
-    // استخدام getAreaInfo بدلاً من getAreaName
+    // Use getAreaInfo instead of getAreaName
     final areaInfo = viewModel.getAreaInfo(habit.area);
 
     return Padding(
@@ -266,7 +272,7 @@ class _HabitsScreenContent extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // عرض المنطقة مع أيقونتها
+                  // Show area with its icon
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
@@ -318,49 +324,6 @@ class _HabitsScreenContent extends StatelessWidget {
     );
   }
 
-  // طريقة خاصة لبناء علامة المنطقة
-  // Widget _buildAreaTag(String areaName) {
-  //   // تحديد لون الخلفية والأيقونة حسب المنطقة
-  //   Color backgroundColor;
-  //   IconData iconData;
-  //
-  //   switch (areaName.toLowerCase()) {
-  //     case 'health':
-  //       backgroundColor = Colors.green.shade100;
-  //       iconData = Icons.favorite;
-  //       break;
-  //     case 'well being':
-  //       backgroundColor = Colors.blue.shade100;
-  //       iconData = Icons.self_improvement;
-  //       break;
-  //     case 'test':
-  //       backgroundColor = Colors.orange.shade100;
-  //       iconData = Icons.school;
-  //       break;
-  //     default:
-  //       backgroundColor = Colors.amber.shade100;
-  //       iconData = Icons.category;
-  //   }
-  //
-  //   return Container(
-  //     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-  //     decoration: BoxDecoration(
-  //       color: backgroundColor,
-  //       borderRadius: BorderRadius.circular(12),
-  //     ),
-  //     child: Row(
-  //       mainAxisSize: MainAxisSize.min,
-  //       children: [
-  //         Icon(iconData, color: backgroundColor.withOpacity(0.7), size: 12),
-  //         const SizedBox(width: 4),
-  //         Text(
-  //           areaName,
-  //           style: const TextStyle(fontSize: 12, color: Colors.black54),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
   Widget _buildAreaTag(String areaName) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -398,6 +361,83 @@ class _HabitsScreenContent extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showCalendarDialog(
+    BuildContext context,
+    HabitTrackingViewModel viewModel,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Dialog title
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Select Date',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.of(context).pop(),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Calendar widget
+                CalendarWidget(
+                  viewModel: viewModel,
+                  onDateSelected: (date) {
+                    viewModel.selectDate(date);
+                    Navigator.of(context).pop();
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                // Today button
+                TextButton(
+                  onPressed: () {
+                    viewModel.selectDate(DateTime.now());
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Go to Today'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

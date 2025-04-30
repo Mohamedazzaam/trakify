@@ -10,10 +10,12 @@ import 'add_habit_state.dart';
 class AddHabitCubit extends Cubit<AddHabitState> {
   final HabitRepository _repository;
   List<String> areas = ['General']; // قائمة أسماء المناطق
+  // في AddHabitCubit
+  // تعديل قائمة الأيام
+  final List<String> days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
-  final List<String> days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-  final List<int> numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
+  // تعديل قائمة الأرقام
+  final List<int> numbers = [1, 2, 3, 4, 5, 6];
   // قائمة الأيقونات المتاحة للاختيار
   final List<IconData> availableIcons = [
     Icons.fitness_center,

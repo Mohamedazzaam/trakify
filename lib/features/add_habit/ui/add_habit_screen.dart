@@ -181,7 +181,11 @@ class _AddHabitForm extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // قسم التكرار
-                const Text('Repeat '),
+                // قسم التكرار
+                const Text(
+                  'Repeat',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -213,35 +217,51 @@ class _AddHabitForm extends StatelessWidget {
 
                 // أيام التكرار (للتكرار اليومي)
                 if (state.repeatType == 'Daily') ...[
-                  const Text('On These Days'),
-                  const SizedBox(height: 8),
+                  const Text(
+                    'On These Days',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 10),
                   Wrap(
-                    spacing: 8,
+                    spacing: 10,
+                    runSpacing: 10,
                     children:
                         cubit.days.map((day) {
                           final isSelected = state.selectedDays.contains(day);
                           return GestureDetector(
                             onTap: () => cubit.toggleDay(day),
                             child: Container(
-                              width: 42,
-                              height: 42,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 8,
-                                horizontal: 12,
-                              ),
+                              width: 45,
+                              height: 45,
                               decoration: BoxDecoration(
                                 color:
                                     isSelected
                                         ? AppColors.primary
                                         : Color(0xffDDEDE8),
                                 borderRadius: BorderRadius.circular(8),
+                                boxShadow:
+                                    isSelected
+                                        ? [
+                                          BoxShadow(
+                                            color: AppColors.primary
+                                                .withOpacity(0.3),
+                                            blurRadius: 4,
+                                            offset: Offset(0, 2),
+                                          ),
+                                        ]
+                                        : null,
                               ),
-                              child: Text(
-                                day,
-                                style: TextStyle(
-                                  color:
-                                      isSelected ? Colors.white : Colors.black,
-                                  fontWeight: FontWeight.bold,
+                              child: Center(
+                                child: Text(
+                                  day, // 'Su', 'Mo', etc.
+                                  style: TextStyle(
+                                    color:
+                                        isSelected
+                                            ? Colors.white
+                                            : Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
                                 ),
                               ),
                             ),
@@ -251,38 +271,70 @@ class _AddHabitForm extends StatelessWidget {
                 ]
                 // عدد التكرار (للتكرار الأسبوعي أو الشهري)
                 else ...[
-                  const SizedBox(height: 8),
+                  Text(
+                    state.repeatType == 'Weekly'
+                        ? 'How many weeks?'
+                        : 'How many months?',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 10),
                   Wrap(
-                    spacing: 8,
+                    spacing: 10,
+                    runSpacing: 10,
                     children:
                         cubit.numbers.map((number) {
                           final isSelected = state.selectedNumber == number;
                           return GestureDetector(
                             onTap: () => cubit.selectNumber(number),
                             child: Container(
-                              width: 46,
-                              height: 42,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 8,
-                                horizontal: 12,
-                              ),
+                              width: 60,
+                              height: 60,
                               decoration: BoxDecoration(
                                 color:
                                     isSelected
                                         ? AppColors.primary
                                         : Color(0xffDDEDE8),
                                 borderRadius: BorderRadius.circular(8),
+                                boxShadow:
+                                    isSelected
+                                        ? [
+                                          BoxShadow(
+                                            color: AppColors.primary
+                                                .withOpacity(0.3),
+                                            blurRadius: 4,
+                                            offset: Offset(0, 2),
+                                          ),
+                                        ]
+                                        : null,
                               ),
                               child: Center(
-                                child: Text(
-                                  number.toString(),
-                                  style: TextStyle(
-                                    color:
-                                        isSelected
-                                            ? Colors.white
-                                            : Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      number.toString(),
+                                      style: TextStyle(
+                                        color:
+                                            isSelected
+                                                ? Colors.white
+                                                : Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    Text(
+                                      state.repeatType == 'Weekly'
+                                          ? (number == 1 ? 'week' : 'weeks')
+                                          : (number == 1 ? 'month' : 'months'),
+                                      style: TextStyle(
+                                        color:
+                                            isSelected
+                                                ? Colors.white.withOpacity(0.9)
+                                                : Colors.black.withOpacity(0.7),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),

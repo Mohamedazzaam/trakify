@@ -9,8 +9,9 @@ import 'package:trakify/features/home/data/repos/habit_tracking_repository.dart'
 import 'package:trakify/features/areas/data/models/area_model.dart';
 
 import '../../data/repos/home_repository.dart';
+import '../CalendarWidget.dart';
 
-// تعريف فئة AreaInfo خارج HabitTrackingViewModel
+// Define AreaInfo class outside HabitTrackingViewModel
 class AreaInfo {
   final String name;
   final IconData icon;
@@ -22,7 +23,9 @@ class AreaInfo {
 class HabitTrackingViewModel extends ChangeNotifier {
   final HabitTrackingRepository _repository;
 
+  // Current state
   DateTime _selectedDate = DateTime.now();
+  DateTime _displayedMonth = DateTime.now(); // For calendar navigation
   String _selectedCategory = 'All';
   List<Habit> _habits = [];
   bool _isLoading = false;
@@ -33,61 +36,180 @@ class HabitTrackingViewModel extends ChangeNotifier {
     _loadHabits();
   }
 
-  // الحصول على التاريخ المحدد
+  // GETTERS
+
+  // Date related getters
   DateTime get selectedDate => _selectedDate;
+  DateTime get displayedMonth => _displayedMonth;
 
-  // الحصول على الفئة المحددة
+  // Calendar specific getters
+  String get currentMonthYear =>
+      DateFormat('MMMM yyyy').format(_displayedMonth);
+
+  int get daysInMonth {
+    return DateTime(_displayedMonth.year, _displayedMonth.month + 1, 0).day;
+  }
+
+  int get firstDayOfMonth {
+    return DateTime(_displayedMonth.year, _displayedMonth.month, 1).weekday % 7;
+  }
+
+  // Category and habits getters
   String get selectedCategory => _selectedCategory;
-
-  // الحصول على قائمة العادات
   List<Habit> get habits => _habits;
-
-  // الحصول على العادات قيد التقدم
   List<Habit> get inProgressHabits =>
       _habits.where((habit) => !isHabitCompleted(habit.id)).toList();
-
-  // الحصول على العادات المكتملة
   List<Habit> get completedHabits =>
       _habits.where((habit) => isHabitCompleted(habit.id)).toList();
 
-  // حالة التحميل
+  // Status getters
   bool get isLoading => _isLoading;
-
-  // رسالة الخطأ (إن وجدت)
   String? get errorMessage => _errorMessage;
-
-  // هل توجد عادات
   bool get hasHabits => _habits.isNotEmpty;
 
-  // تغيير التاريخ المحدد
+  // Formatted date getters
+  String get dayName => DateFormat('EEEE').format(_selectedDate);
+  String get formattedDate => DateFormat('dd MMMM yyyy').format(_selectedDate);
+
+  // Get available categories from Hive
+  List<String> get availableCategories {
+    final categories = ['All']; // Always start with "All"
+
+    try {
+      // Get all areas from Hive
+      final areaBox = Hive.box<Area>('areas');
+      final areaNames = areaBox.values.map((area) => area.title).toList();
+
+      // Add unique area names
+      for (var name in areaNames) {
+        if (!categories.contains(name)) {
+          categories.add(name);
+        }
+      }
+    } catch (e) {
+      print('Error getting area categories: $e');
+    }
+
+    return categories;
+  }
+
+  // CALENDAR METHODS
+
+  // Select a specific date
   void selectDate(DateTime date) {
     _selectedDate = date;
+    // If the selected date is in a different month, update displayed month
+    if (date.month != _displayedMonth.month ||
+        date.year != _displayedMonth.year) {
+      _displayedMonth = DateTime(date.year, date.month, 1);
+    }
     _loadHabits();
     notifyListeners();
   }
 
-  // الانتقال لليوم السابق
+  // Navigate to previous month in calendar
+  void previousMonth() {
+    _displayedMonth = DateTime(
+      _displayedMonth.year,
+      _displayedMonth.month - 1,
+      1,
+    );
+    notifyListeners();
+  }
+
+  // Navigate to next month in calendar
+  void nextMonth() {
+    _displayedMonth = DateTime(
+      _displayedMonth.year,
+      _displayedMonth.month + 1,
+      1,
+    );
+    notifyListeners();
+  }
+
+  // Date navigation methods
   void previousDay() {
-    _selectedDate = _selectedDate.subtract(const Duration(days: 1));
-    _loadHabits();
-    notifyListeners();
+    selectDate(_selectedDate.subtract(const Duration(days: 1)));
   }
 
-  // الانتقال لليوم التالي
   void nextDay() {
-    _selectedDate = _selectedDate.add(const Duration(days: 1));
-    _loadHabits();
-    notifyListeners();
+    selectDate(_selectedDate.add(const Duration(days: 1)));
   }
 
-  // تغيير الفئة المحددة
+  // Date validation methods
+  bool isToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
+  }
+
+  bool isSelectedDate(DateTime date) {
+    return date.year == _selectedDate.year &&
+        date.month == _selectedDate.month &&
+        date.day == _selectedDate.day;
+  }
+
+  // HABIT RELATED METHODS
+
+  // Check if any habits should be performed on a date
+  bool hasHabitsOnDate(DateTime date) {
+    final dateString = _formatDate(date);
+
+    // Filter habits based on repeat type and pattern
+    return _repository.getAllHabits().any(
+      (habit) => shouldHabitBePerformedOnDate(habit, date),
+    );
+  }
+
+  // Check if any habits were completed on a date
+  bool hasCompletedHabitsOnDate(DateTime date) {
+    final dateString = _formatDate(date);
+
+    List<Habit> habitsForDate =
+        _repository
+            .getAllHabits()
+            .where((habit) => shouldHabitBePerformedOnDate(habit, date))
+            .toList();
+
+    if (habitsForDate.isEmpty) return false;
+
+    return habitsForDate.any(
+      (habit) => _repository.isHabitCompletedOnDate(habit.id, dateString),
+    );
+  }
+
+  // Get the completion percentage for a date
+  double getCompletionPercentageForDate(DateTime date) {
+    final dateString = _formatDate(date);
+
+    List<Habit> habitsForDate =
+        _repository
+            .getAllHabits()
+            .where((habit) => shouldHabitBePerformedOnDate(habit, date))
+            .toList();
+
+    if (habitsForDate.isEmpty) return 0.0;
+
+    int completedCount =
+        habitsForDate
+            .where(
+              (habit) =>
+                  _repository.isHabitCompletedOnDate(habit.id, dateString),
+            )
+            .length;
+
+    return completedCount / habitsForDate.length;
+  }
+
+  // Filter habits by category
   void selectCategory(String category) {
     _selectedCategory = category;
     _loadHabits();
     notifyListeners();
   }
 
-  // تبديل حالة إكمال العادة
+  // Toggle habit completion status
   Future<void> toggleHabitCompletion(String habitId) async {
     try {
       final dateString = _formatDate(_selectedDate);
@@ -99,21 +221,82 @@ class HabitTrackingViewModel extends ChangeNotifier {
     }
   }
 
-  // التحقق مما إذا كانت العادة مكتملة في التاريخ المحدد
+  // Check if a habit is completed on the selected date
   bool isHabitCompleted(String habitId) {
     final dateString = _formatDate(_selectedDate);
     return _repository.isHabitCompletedOnDate(habitId, dateString);
   }
 
-  // تحميل العادات بناءً على الفئة المحددة والتاريخ
+  // HELPER METHODS
+
+  // Determine if a habit should be performed on a specific date based on its repeat pattern
+  bool shouldHabitBePerformedOnDate(Habit habit, DateTime date) {
+    try {
+      if (habit.repeatType == 'Daily') {
+        // Format the day of week to match the format stored in habit.selectedDays
+        String dayOfWeek = DateFormat('E').format(date).substring(0, 2);
+        return habit.selectedDays.contains(dayOfWeek);
+      } else if (habit.repeatType == 'Weekly') {
+        // For weekly habits, calculate weeks since creation
+        final habitCreationDate = DateTime.fromMillisecondsSinceEpoch(
+          int.parse(habit.id),
+        );
+
+        // If the habit starts in the future, it's not due yet
+        if (habitCreationDate.isAfter(date)) return false;
+
+        // Calculate days since creation
+        final daysSinceCreation = date.difference(habitCreationDate).inDays;
+
+        // For weekly habits, check if this is a multiple of (repeatNumber * 7) days
+        int repeatWeeks = habit.repeatNumber ?? 1;
+        return daysSinceCreation % (repeatWeeks * 7) == 0;
+      } else if (habit.repeatType == 'Monthly') {
+        // For monthly habits, check if the day of month matches
+        final habitCreationDate = DateTime.fromMillisecondsSinceEpoch(
+          int.parse(habit.id),
+        );
+
+        // If the habit starts in the future, it's not due yet
+        if (habitCreationDate.isAfter(date)) return false;
+
+        // Check if the day matches AND if the month difference is a multiple of repeatNumber
+        if (date.day != habitCreationDate.day) return false;
+
+        int monthDiff =
+            (date.year - habitCreationDate.year) * 12 +
+            (date.month - habitCreationDate.month);
+
+        int repeatMonths = habit.repeatNumber ?? 1;
+        return monthDiff % repeatMonths == 0;
+      }
+
+      return false;
+    } catch (e) {
+      print('Error in shouldHabitBePerformedOnDate: $e');
+      return false;
+    }
+  }
+
+  // Load habits based on selected category and date
   Future<void> _loadHabits() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _habits = _repository.getHabitsByCategory(_selectedCategory);
-      // يمكن هنا إضافة مزيد من الفلترة حسب التاريخ إذا لزم الأمر
+      // First get all habits in the selected category
+      List<Habit> categoryHabits = _repository.getHabitsByCategory(
+        _selectedCategory,
+      );
+
+      // Then filter by date (habits that should be performed on the selected date)
+      _habits =
+          categoryHabits
+              .where(
+                (habit) => shouldHabitBePerformedOnDate(habit, _selectedDate),
+              )
+              .toList();
 
       _isLoading = false;
       notifyListeners();
@@ -124,37 +307,12 @@ class HabitTrackingViewModel extends ChangeNotifier {
     }
   }
 
-  // تنسيق التاريخ كسلسلة
+  // Format date to string
   String _formatDate(DateTime date) {
     return DateFormat('yyyy-MM-dd').format(date);
   }
 
-  // الحصول على اسم المنطقة
-  String getAreaName(String areaId) {
-    try {
-      final areaBox = Hive.box<Area>('areas');
-
-      for (final area in areaBox.values) {
-        if (area.id == areaId) {
-          return area.title;
-        }
-      }
-
-      // إذا لم يتم العثور على المنطقة، استخدم بعض المنطق لتخمين الاسم
-      if (areaId == 'general') return 'General';
-      if (areaId.toLowerCase().contains('health')) return 'Health';
-      if (areaId.toLowerCase().contains('well')) return 'Well Being';
-      if (areaId.toLowerCase().contains('test')) return 'Test';
-
-      // إذا كل شيء فشل، أرجع قيمة معقولة
-      return areaId.replaceAll('_', ' ').trim();
-    } catch (e) {
-      print('Error getting area name: $e');
-      return 'Unknown Area';
-    }
-  }
-
-  // الحصول على معلومات المنطقة
+  // Get area information
   AreaInfo getAreaInfo(String areaId) {
     try {
       final areaBox = Hive.box<Area>('areas');
@@ -164,7 +322,7 @@ class HabitTrackingViewModel extends ChangeNotifier {
         }
       }
 
-      // إذا لم يتم العثور على المنطقة، استخدم معلومات افتراضية
+      // Default values based on area ID if not found
       switch (areaId.toLowerCase()) {
         case 'health':
           return AreaInfo(
@@ -173,10 +331,17 @@ class HabitTrackingViewModel extends ChangeNotifier {
             color: Colors.red,
           );
         case 'well being':
+        case 'wellbeing':
           return AreaInfo(
             name: 'Well Being',
             icon: Icons.self_improvement,
             color: Colors.blue,
+          );
+        case 'general':
+          return AreaInfo(
+            name: 'General',
+            icon: Icons.category,
+            color: AppColors.primary,
           );
         default:
           return AreaInfo(
@@ -195,34 +360,8 @@ class HabitTrackingViewModel extends ChangeNotifier {
     }
   }
 
-  // تحصل على اسم اليوم من التاريخ المحدد
-  String get dayName => DateFormat('EEEE').format(_selectedDate);
-
-  // تحصل على التاريخ منسقًا
-  String get formattedDate => DateFormat('dd MMMM yyyy').format(_selectedDate);
-
-  // تعيد قائمة بالفئات المتاحة
-  // داخل فئة HabitTrackingViewModel
-
-  // تعديل الخاصية availableCategories لتجلب المناطق من Hive
-  List<String> get availableCategories {
-    final categories = ['All']; // دائمًا ابدأ بخيار "All"
-
-    try {
-      // جلب جميع المناطق من Hive
-      final areaBox = Hive.box<Area>('areas');
-      final areaNames = areaBox.values.map((area) => area.title).toList();
-
-      // إضافة أسماء المناطق المميزة فقط (بدون تكرار)
-      for (var name in areaNames) {
-        if (!categories.contains(name)) {
-          categories.add(name);
-        }
-      }
-    } catch (e) {
-      print('Error getting area categories: $e');
-    }
-
-    return categories;
+  // Legacy method for backward compatibility
+  String getAreaName(String areaId) {
+    return getAreaInfo(areaId).name;
   }
 }
