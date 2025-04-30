@@ -7,7 +7,10 @@ import '../../../core/widgets/area_habit_item.dart';
 import '../../../core/widgets/area_list_tile.dart';
 import '../../../features/add_habit/data/models/habit_model.dart';
 import '../../add_habit/ui/add_habit_screen.dart';
+import '../../edit_habit/ui/edit_habit_screen.dart';
+import '../../progress/ui/view_models/StatisticsViewModel.dart';
 import '../data/models/area_model.dart';
+import 'package:provider/provider.dart';
 
 class AreaScreen extends StatelessWidget {
   const AreaScreen({
@@ -154,7 +157,6 @@ class AreaScreen extends StatelessWidget {
               title: Text('Edit Area'),
               onTap: () {
                 Navigator.pop(context);
-                // إضافة منطق لتعديل المنطقة
                 // يمكنك عرض مربع حوار لتحرير المنطقة
               },
             ),
@@ -220,7 +222,6 @@ class AreaScreen extends StatelessWidget {
     );
   }
 
-  // عرض قائمة خيارات العادة
   void _showHabitOptionsMenu(BuildContext context, Habit habit) {
     showModalBottomSheet(
       context: context,
@@ -231,9 +232,22 @@ class AreaScreen extends StatelessWidget {
               leading: Icon(Icons.edit),
               title: Text('Edit Habit'),
               onTap: () {
-                Navigator.pop(context);
-                // إضافة منطق لتعديل العادة
-                // يمكنك التوجيه إلى شاشة تحرير العادة
+                Navigator.pop(context); // Close the bottom sheet
+
+                // Navigate to the edit habit screen with the selected habit
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditHabitScreen(habit: habit),
+                  ),
+                ).then((_) {
+                  // Simply force a rebuild to refresh the data
+                  if (context.mounted) {
+                    // Force rebuilding the widget to reflect any changes
+                    // This works because we're using ValueListenableBuilder
+                    // which will automatically refresh when the Hive box changes
+                  }
+                });
               },
             ),
             ListTile(
