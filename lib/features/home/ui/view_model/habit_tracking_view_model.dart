@@ -202,10 +202,27 @@ class HabitTrackingViewModel extends ChangeNotifier {
   String get formattedDate => DateFormat('dd MMMM yyyy').format(_selectedDate);
 
   // تعيد قائمة بالفئات المتاحة
-  List<String> get availableCategories => [
-    'All',
-    'Well Being',
-    'Health',
-    'Test',
-  ];
+  // داخل فئة HabitTrackingViewModel
+
+  // تعديل الخاصية availableCategories لتجلب المناطق من Hive
+  List<String> get availableCategories {
+    final categories = ['All']; // دائمًا ابدأ بخيار "All"
+
+    try {
+      // جلب جميع المناطق من Hive
+      final areaBox = Hive.box<Area>('areas');
+      final areaNames = areaBox.values.map((area) => area.title).toList();
+
+      // إضافة أسماء المناطق المميزة فقط (بدون تكرار)
+      for (var name in areaNames) {
+        if (!categories.contains(name)) {
+          categories.add(name);
+        }
+      }
+    } catch (e) {
+      print('Error getting area categories: $e');
+    }
+
+    return categories;
+  }
 }

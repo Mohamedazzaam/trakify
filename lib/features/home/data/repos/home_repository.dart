@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:trakify/features/add_habit/data/models/habit_model.dart';
 import 'package:trakify/features/add_habit/data/repos/habit_repository.dart';
 
+import '../../../areas/data/models/area_model.dart';
 import '../models/habit_completion_model.dart';
 
 class HabitTrackingRepository {
@@ -16,14 +17,43 @@ class HabitTrackingRepository {
   }
 
   // جلب العادات حسب الفئة
+  // في HabitTrackingRepository
   List<Habit> getHabitsByCategory(String category) {
+    // إذا كان الفلتر هو "All"، أرجع كل العادات
     if (category == 'All') {
       return getAllHabits();
     }
 
-    return getAllHabits()
-        .where((habit) => _getHabitCategory(habit) == category)
-        .toList();
+    // جلب معرف المنطقة المقابل للاسم المحدد
+    String? categoryId = getCategoryIdByName(category);
+
+    if (categoryId == null) {
+      // إذا لم يتم العثور على المنطقة، أرجع قائمة فارغة
+      return [];
+    }
+
+    // فلترة العادات حسب معرف المنطقة
+    return getAllHabits().where((habit) => habit.area == categoryId).toList();
+  }
+
+  // دالة مساعدة للحصول على معرف المنطقة من اسمها
+  String? getCategoryIdByName(String categoryName) {
+    try {
+      final areaBox = Hive.box<Area>('areas');
+
+      // طريقة 1: استخدم for loop بدلاً من firstWhere
+      for (var area in areaBox.values) {
+        if (area.title == categoryName) {
+          return area.id;
+        }
+      }
+
+      // إذا لم يتم العثور على المنطقة
+      return null;
+    } catch (e) {
+      print('Error getting category ID: $e');
+      return null;
+    }
   }
 
   // تبديل حالة إكمال العادة
