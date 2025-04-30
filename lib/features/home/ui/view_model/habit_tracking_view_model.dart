@@ -9,7 +9,6 @@ import 'package:trakify/features/home/data/repos/habit_tracking_repository.dart'
 import 'package:trakify/features/areas/data/models/area_model.dart';
 
 import '../../data/repos/home_repository.dart';
-import '../CalendarWidget.dart';
 
 // Define AreaInfo class outside HabitTrackingViewModel
 class AreaInfo {
@@ -154,8 +153,6 @@ class HabitTrackingViewModel extends ChangeNotifier {
 
   // Check if any habits should be performed on a date
   bool hasHabitsOnDate(DateTime date) {
-    final dateString = _formatDate(date);
-
     // Filter habits based on repeat type and pattern
     return _repository.getAllHabits().any(
       (habit) => shouldHabitBePerformedOnDate(habit, date),
@@ -213,18 +210,42 @@ class HabitTrackingViewModel extends ChangeNotifier {
   Future<void> toggleHabitCompletion(String habitId) async {
     try {
       final dateString = _formatDate(_selectedDate);
+
+      // Debug output
+      final beforeStatus = isHabitCompleted(habitId);
+      print('Before toggle - Habit $habitId completion: $beforeStatus');
+
+      // Toggle completion in repository
       await _repository.toggleHabitCompletion(habitId, dateString);
+
+      // Debug output
+      final afterStatus = _repository.isHabitCompletedOnDate(
+        habitId,
+        dateString,
+      );
+      print('After toggle - Habit $habitId completion: $afterStatus');
+
+      // Force reload habits to reflect changes
+      await _loadHabits();
+
+      // Notify listeners to update UI
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Error toggling habit completion: $e';
+      print('Error toggling habit completion: $e');
       notifyListeners();
     }
   }
 
   // Check if a habit is completed on the selected date
   bool isHabitCompleted(String habitId) {
-    final dateString = _formatDate(_selectedDate);
-    return _repository.isHabitCompletedOnDate(habitId, dateString);
+    try {
+      final dateString = _formatDate(_selectedDate);
+      return _repository.isHabitCompletedOnDate(habitId, dateString);
+    } catch (e) {
+      print('Error checking habit completion status: $e');
+      return false;
+    }
   }
 
   // HELPER METHODS

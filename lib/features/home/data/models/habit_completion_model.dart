@@ -1,29 +1,31 @@
-// lib/features/habit_tracking/data/models/habit_completion_model.dart
+// lib/features/home/data/models/habit_completion_model.dart
 import 'package:hive/hive.dart';
 
 part 'habit_completion_model.g.dart';
 
-@HiveType(typeId: 2)
+@HiveType(typeId: 2) // Make sure this ID doesn't conflict with other Hive types
 class HabitCompletionModel extends HiveObject {
   @HiveField(0)
-  late String habitId;
+  String habitId;
 
   @HiveField(1)
-  late List<String> completedDates;
+  List<String> completedDates;
 
+  // Constructor
   HabitCompletionModel({required this.habitId, List<String>? completedDates})
-    : completedDates = completedDates ?? [];
+    : this.completedDates = completedDates ?? [];
 
-  bool isCompletedOnDate(String dateString) {
-    return completedDates.contains(dateString);
-  }
-
+  // Toggle completion status for a specific date
   void toggleCompletion(String dateString) {
-    if (isCompletedOnDate(dateString)) {
+    if (completedDates.contains(dateString)) {
       completedDates.remove(dateString);
     } else {
       completedDates.add(dateString);
     }
-    save();
+  }
+
+  // Check if habit is completed on date
+  bool isCompletedOnDate(String dateString) {
+    return completedDates.contains(dateString);
   }
 }

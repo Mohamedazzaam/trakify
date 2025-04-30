@@ -176,21 +176,36 @@ class _HabitsScreenContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (viewModel.inProgressHabits.isNotEmpty) ...[
-            const Padding(
-              padding: EdgeInsets.only(bottom: 10),
-              child: Text(
-                'In Progress',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+          // In Progress section
+          const Padding(
+            padding: EdgeInsets.only(bottom: 10),
+            child: Text(
+              'In Progress',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
+          ),
+
+          // Show in-progress habits or placeholder if empty
+          if (viewModel.inProgressHabits.isNotEmpty)
             ...viewModel.inProgressHabits.map(
               (habit) => _buildHabitItem(context, habit, false, viewModel),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20, top: 5),
+              child: Text(
+                'No habits in progress',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
             ),
-            const SizedBox(height: 20),
-          ],
 
+          // Only show Completed section if there are completed habits
           if (viewModel.completedHabits.isNotEmpty) ...[
+            const SizedBox(height: 20),
             const Padding(
               padding: EdgeInsets.only(bottom: 10),
               child: Text(
@@ -253,12 +268,26 @@ class _HabitsScreenContent extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.lightGreen.shade50,
+          color:
+              isCompleted
+                  ? Colors
+                      .lightGreen
+                      .shade100 // Lighter green for completed habits
+                  : Colors.lightGreen.shade50, // Original color for in-progress
           borderRadius: BorderRadius.circular(10),
+          // Add a subtle border for completed items
+          border:
+              isCompleted
+                  ? Border.all(color: Colors.green.withOpacity(0.3), width: 1)
+                  : null,
         ),
         child: Row(
           children: [
-            Icon(habit.icon, color: AppColors.primary, size: 24),
+            Icon(
+              habit.icon,
+              color: isCompleted ? Colors.green : AppColors.primary,
+              size: 24,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -266,9 +295,19 @@ class _HabitsScreenContent extends StatelessWidget {
                 children: [
                   Text(
                     habit.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
+                      // Strike through text if completed
+                      decoration:
+                          isCompleted
+                              ? TextDecoration.lineThrough
+                              : TextDecoration.none,
+                      color:
+                          isCompleted
+                              ? Colors
+                                  .black54 // Slightly faded for completed
+                              : Colors.black,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -279,19 +318,27 @@ class _HabitsScreenContent extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Color(0xffFFF4B5),
+                      color:
+                          isCompleted
+                              ? Color(0xffE8F5E9) // Light green for completed
+                              : Color(0xffFFF4B5), // Original yellow
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(areaInfo.icon, size: 14, color: AppColors.primary),
+                        Icon(
+                          areaInfo.icon,
+                          size: 14,
+                          color: isCompleted ? Colors.green : AppColors.primary,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           areaInfo.name,
                           style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.primary,
+                            color:
+                                isCompleted ? Colors.green : AppColors.primary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -301,16 +348,27 @@ class _HabitsScreenContent extends StatelessWidget {
                 ],
               ),
             ),
-            GestureDetector(
-              onTap: () => viewModel.toggleHabitCompletion(habit.id),
+            // Checkbox with animation for better feedback
+            InkWell(
+              borderRadius: BorderRadius.circular(4),
+              onTap: () async {
+                // Show immediate feedback with a simple animation
+                await _animateCompletion(context);
+
+                // Toggle habit completion
+                await viewModel.toggleHabitCompletion(habit.id);
+              },
               child: Container(
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
                   shape: BoxShape.rectangle,
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: AppColors.primary, width: 2),
-                  color: isCompleted ? AppColors.primary : Colors.transparent,
+                  border: Border.all(
+                    color: isCompleted ? Colors.green : AppColors.primary,
+                    width: 2,
+                  ),
+                  color: isCompleted ? Colors.green : Colors.transparent,
                 ),
                 child:
                     isCompleted
@@ -322,6 +380,25 @@ class _HabitsScreenContent extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Helper function to show toggle animation
+  Future<void> _animateCompletion(BuildContext context) async {
+    // Simple ripple animation using a ScaffoldMessenger overlay
+    final overlay = ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const SizedBox.shrink(),
+        duration: const Duration(milliseconds: 100),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+    );
+
+    // Dismiss the overlay after a short delay
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    }
   }
 
   Widget _buildAreaTag(String areaName) {
@@ -339,27 +416,6 @@ class _HabitsScreenContent extends StatelessWidget {
           color: AppColors.primary,
           fontWeight: FontWeight.w500,
         ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryTag(String category) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: Colors.amber.shade100,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.favorite, color: Colors.amber, size: 12),
-          const SizedBox(width: 4),
-          Text(
-            category,
-            style: const TextStyle(fontSize: 12, color: Colors.black54),
-          ),
-        ],
       ),
     );
   }
