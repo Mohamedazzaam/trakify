@@ -1,12 +1,23 @@
 // lib/features/home/ui/view_model/habit_tracking_view_model.dart
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:trakify/core/theming/app_colors.dart';
 import 'package:trakify/features/add_habit/data/models/habit_model.dart';
 import 'package:trakify/features/home/data/repos/habit_tracking_repository.dart';
+import 'package:trakify/features/areas/data/models/area_model.dart';
 
-import '../../../areas/data/models/area_model.dart';
 import '../../data/repos/home_repository.dart';
+
+// تعريف فئة AreaInfo خارج HabitTrackingViewModel
+class AreaInfo {
+  final String name;
+  final IconData icon;
+  final Color color;
+
+  AreaInfo({required this.name, required this.icon, this.color = Colors.black});
+}
 
 class HabitTrackingViewModel extends ChangeNotifier {
   final HabitTrackingRepository _repository;
@@ -117,13 +128,10 @@ class HabitTrackingViewModel extends ChangeNotifier {
   String _formatDate(DateTime date) {
     return DateFormat('yyyy-MM-dd').format(date);
   }
-  // في lib/features/home/ui/view_model/habit_tracking_view_model.dart
-  // أضف هذه الطريقة إلى الفئة:
 
-  // في HabitTrackingViewModel
+  // الحصول على اسم المنطقة
   String getAreaName(String areaId) {
     try {
-      // عدم محاولة فتح الصندوق مرة أخرى، بل استخدام الصندوق المفتوح بالفعل
       final areaBox = Hive.box<Area>('areas');
 
       for (final area in areaBox.values) {
@@ -143,6 +151,47 @@ class HabitTrackingViewModel extends ChangeNotifier {
     } catch (e) {
       print('Error getting area name: $e');
       return 'Unknown Area';
+    }
+  }
+
+  // الحصول على معلومات المنطقة
+  AreaInfo getAreaInfo(String areaId) {
+    try {
+      final areaBox = Hive.box<Area>('areas');
+      for (var area in areaBox.values) {
+        if (area.id == areaId) {
+          return AreaInfo(name: area.title, icon: area.icon, color: area.color);
+        }
+      }
+
+      // إذا لم يتم العثور على المنطقة، استخدم معلومات افتراضية
+      switch (areaId.toLowerCase()) {
+        case 'health':
+          return AreaInfo(
+            name: 'Health',
+            icon: Icons.favorite,
+            color: Colors.red,
+          );
+        case 'well being':
+          return AreaInfo(
+            name: 'Well Being',
+            icon: Icons.self_improvement,
+            color: Colors.blue,
+          );
+        default:
+          return AreaInfo(
+            name: areaId.replaceAll('_', ' ').trim(),
+            icon: Icons.category,
+            color: AppColors.primary,
+          );
+      }
+    } catch (e) {
+      print('Error getting area info: $e');
+      return AreaInfo(
+        name: 'Unknown Area',
+        icon: Icons.help_outline,
+        color: Colors.grey,
+      );
     }
   }
 

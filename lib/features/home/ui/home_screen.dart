@@ -1,10 +1,8 @@
-// lib/features/home/ui/habits_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trakify/core/theming/app_colors.dart';
 import 'package:trakify/features/add_habit/data/models/habit_model.dart';
 import 'package:trakify/features/add_habit/data/repos/habit_repository.dart';
-import 'package:trakify/features/home/data/repos/habit_tracking_repository.dart';
 import 'package:trakify/features/home/ui/view_model/habit_tracking_view_model.dart';
 
 import '../data/repos/home_repository.dart';
@@ -53,7 +51,6 @@ class _HabitsScreenContent extends StatelessWidget {
         children: [
           const SizedBox(height: 10),
           // عنوان بسيط
-          _buildSimpleHeader(),
           const SizedBox(height: 20),
           // شريط الفئات
           _buildCategoryTabs(context, viewModel),
@@ -70,28 +67,6 @@ class _HabitsScreenContent extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSimpleHeader() {
-    return Row(
-      children: const [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Good Morning ☀️',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            Text(
-              'Mohamed ahmed',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        Spacer(),
-        Icon(Icons.notifications_outlined, color: AppColors.primary),
-      ],
     );
   }
 
@@ -258,80 +233,14 @@ class _HabitsScreenContent extends StatelessWidget {
     );
   }
 
-  // Widget _buildHabitItem(
-  //   BuildContext context,
-  //   Habit habit,
-  //   bool isCompleted,
-  //   HabitTrackingViewModel viewModel,
-  // ) {
-  //   return Padding(
-  //     padding: const EdgeInsets.only(bottom: 10),
-  //     child: Container(
-  //       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-  //       decoration: BoxDecoration(
-  //         color: Colors.lightGreen.shade50,
-  //         borderRadius: BorderRadius.circular(10),
-  //       ),
-  //       child: Row(
-  //         children: [
-  //           Icon(habit.icon, color: AppColors.primary, size: 24),
-  //           const SizedBox(width: 12),
-  //           Expanded(
-  //             child: Column(
-  //               crossAxisAlignment: CrossAxisAlignment.start,
-  //               children: [
-  //                 Text(
-  //                   habit.name,
-  //                   style: const TextStyle(
-  //                     fontSize: 16,
-  //                     fontWeight: FontWeight.w500,
-  //                   ),
-  //                 ),
-  //                 const SizedBox(height: 4),
-  //                 // عرض علامات الفئات
-  //                 Row(
-  //                   children: [
-  //                     _buildCategoryTag('Health'),
-  //                     const SizedBox(width: 4),
-  //                     _buildCategoryTag('Health'),
-  //                     const SizedBox(width: 4),
-  //                     _buildCategoryTag('Health'),
-  //                   ],
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //           // مربع الاختيار لإكمال العادة
-  //           GestureDetector(
-  //             onTap: () => viewModel.toggleHabitCompletion(habit.id),
-  //             child: Container(
-  //               width: 24,
-  //               height: 24,
-  //               decoration: BoxDecoration(
-  //                 shape: BoxShape.rectangle,
-  //                 borderRadius: BorderRadius.circular(4),
-  //                 border: Border.all(color: AppColors.primary, width: 2),
-  //                 color: isCompleted ? AppColors.primary : Colors.transparent,
-  //               ),
-  //               child:
-  //                   isCompleted
-  //                       ? const Icon(Icons.check, size: 16, color: Colors.white)
-  //                       : null,
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
   Widget _buildHabitItem(
     BuildContext context,
     Habit habit,
     bool isCompleted,
     HabitTrackingViewModel viewModel,
   ) {
-    // استخدام دالة getAreaName للحصول على اسم المنطقة من معرفها
-    final areaName = viewModel.getAreaName(habit.area);
+    // استخدام getAreaInfo بدلاً من getAreaName
+    final areaInfo = viewModel.getAreaInfo(habit.area);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -357,12 +266,35 @@ class _HabitsScreenContent extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // عرض اسم المنطقة المحصول عليه
-                  _buildAreaTag(areaName),
+                  // عرض المنطقة مع أيقونتها
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Color(0xffFFF4B5),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(areaInfo.icon, size: 14, color: AppColors.primary),
+                        const SizedBox(width: 4),
+                        Text(
+                          areaInfo.name,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-            // مربع الاختيار لإكمال العادة
             GestureDetector(
               onTap: () => viewModel.toggleHabitCompletion(habit.id),
               child: Container(
